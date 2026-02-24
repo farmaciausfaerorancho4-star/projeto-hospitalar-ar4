@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Chamador - USF Aero Rancho IV</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+    <style>
+        /* Estilos preservados do seu original */
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #003366; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; }
+        .box { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        h2 { color: #003366; text-align: center; margin-bottom: 20px; }
+        .categoria-selector { background: #e9ecef; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; border: 1px solid #dee2e6; }
+        label { font-weight: bold; display: block; margin-top: 15px; font-size: 0.9rem; }
+        select, input { width: 100%; padding: 12px; margin-top: 5px; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; font-size: 1rem; }
+        .btn-update { background: #28a745; color: white; border: none; padding: 12px; border-radius: 6px; width: 100%; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-normal { background: #0056b3; color: white; border: none; padding: 20px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 48%; font-size: 0.9rem; }
+        .btn-preferencial { background: #ff8c00; color: white; border: none; padding: 20px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 48%; font-size: 0.9rem; }
+        .btn-odonto { background: #17a2b8; color: white; border: none; padding: 15px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; }
+        .btn-coleta { background: #6f42c1; color: white; border: none; padding: 15px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; margin-bottom: 15px; font-size: 1rem; }
+        .info-acolhimento { background: #fff3cd; border: 1px solid #ffeeba; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 0.85rem; color: #856404; }
+        .alerta-instrucao { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 0.85rem; text-align: center; font-weight: bold; }
+        .flex-buttons { display: flex; justify-content: space-between; margin-top: 15px; }
+        .btn-chamar { width: 100%; padding: 15px; background: #28a745; color: white; border: none; border-radius: 6px; font-size: 1.1rem; font-weight: bold; margin-top: 20px; cursor: pointer; }
+        .btn-reset { background: none; border: none; color: #999; font-size: 0.7rem; cursor: pointer; text-decoration: underline; margin-top: 15px; width: 100%; }
+        .historico-local { margin-top: 20px; border-top: 2px solid #003366; padding-top: 10px; }
+        .item-historico { background: #fff; border: 1px solid #ddd; padding: 8px 12px; border-radius: 6px; margin-bottom: 5px; display: flex; flex-direction: column; font-size: 0.85rem; }
+        .item-dados { display: flex; justify-content: space-between; align-items: center; }
+        .btn-rechamada { background: #ffc107; border: none; padding: 4px; border-radius: 4px; cursor: pointer; font-size: 0.7rem; font-weight: bold; margin-top: 5px; }
+        .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    </style>
+</head>
+<body>
+    <div id="loginOverlay" class="login-overlay">
+        <div class="box">
+            <h2 style="margin-top:0">Acesso Restrito</h2>
+            <p style="text-align:center; font-size:0.9rem">Digite a senha da unidade:</p>
+            <input type="password" id="senhaAcesso" placeholder="Senha">
+            <button class="btn-update" onclick="verificarSenha()">ENTRAR</button>
+        </div>
+    </div>
+
+    <div class="box" id="mainContent" style="display:none">
+        <h2>USF AERO RANCHO IV</h2>
+        <div class="categoria-selector">
+            <label style="margin-top:0">Quem é você?</label>
+            <select id="categoria" onchange="trocouCategoria()">
+                <option value="">-- Selecione --</option>
+                <option value="acolhimento">ACOLHIMENTO (Entrega Senhas)</option>
+                <option value="recepcao">RECEPÇÃO (Chama Senhas)</option>
+                <option value="medico">MÉDICO</option>
+                <option value="enfermagem">ENFERMAGEM</option>
+                <option value="servico_social">SERVIÇO SOCIAL</option>
+                <option value="odonto">ODONTOLOGIA</option>
+                <option value="gerencia">GERÊNCIA</option>
+            </select>
+        </div>
+
+        <div id="areaChamada" style="display:none">
+            <div id="interfaceAcolhimento" style="display:none">
+                <div class="alerta-instrucao">ℹ️ Informe apenas a ÚLTIMA senha entregue.</div>
+                <div class="grid-inputs">
+                    <div><small>Normal:</small><input type="number" id="inputNormal" value="0"></div>
+                    <div><small>Preferencial:</small><input type="number" id="inputPref" value="0"></div>
+                    <div><small>Coleta:</small><input type="number" id="inputColeta" value="0"></div>
+                    <div><small>Odonto:</small><input type="number" id="inputOdonto" value="0"></div>
+                </div>
+                <button class="btn-update" onclick="atualizarEntregues()">ATUALIZAR RECEPÇÃO</button><hr>
+            </div>
+
+            <div id="interfaceRecepcao" style="display:none">
+                <div class="info-acolhimento">
+                    Normal: <b id="statusNormal">0</b> | Pref: <b id="statusPref">0</b><br>
+                    Coleta: <b id="statusColeta">0</b> | Odonto: <b id="statusOdonto">0</b>
+                </div>
+                <div class="flex-buttons">
+                    <button class="btn-normal" onclick="gerarSenha('NORMAL', 'SENHA')">SENHA</button>
+                    <button class="btn-preferencial" onclick="gerarSenha('PREFERENCIAL', 'SENHA PREF.')">PREF.</button>
+                </div>
+                <button class="btn-odonto" onclick="gerarSenha('ODONTO', 'SENHA ODONTO')">SENHA ODONTOLOGIA</button><hr>
+            </div>
+
+            <div id="selecaoSala">
+                <label>Selecione seu Local:</label>
+                <select id="minhaSala" onchange="configurarTela()"></select>
+            </div>
+
+            <div id="interfaceAvisos" style="display:none; margin-top: 20px; border-top: 1px solid #ddd; padding-top: 15px;">
+                <label style="color: #0056b3;">Gestão de Avisos TV:</label>
+                <input type="text" id="inputAvisoUnidade" placeholder="Ex: Reunião às 14h">
+                <div style="margin-top: 10px; display: flex; align-items: center; gap: 10px;">
+                    <label style="margin:0; font-size: 0.8rem;">Cor do Card:</label>
+                    <input type="color" id="corAviso" value="#007bff" style="width: 50px; height: 30px; border:none; cursor:pointer;">
+                </div>
+                <input type="hidden" id="editAvisoKey">
+                <button id="btnSalvarAviso" class="btn-update" style="background: #007bff;" onclick="salvarAvisoTV()">ADICIONAR AVISO</button>
+                <div id="listaAvisosGerencia" style="margin-top: 15px; background: #f8f9fa; border: 1px solid #ddd; padding: 10px; border-radius: 8px;">
+                    <div id="itensAvisos" style="font-size: 0.8rem;">Carregando...</div>
+                </div>
+            </div>
+
+            <div id="interfaceColeta" style="display:none; margin-top: 15px;">
+                <button class="btn-coleta" onclick="gerarSenha('COLETA', 'SENHA COLETA')">SENHA COLETA</button>
+            </div>
+
+            <div id="interfaceNome" style="display:none">
+                <label>Nome do Paciente:</label>
+                <input type="text" id="nomePaciente" placeholder="Nome completo">
+                <button class="btn-chamar" onclick="enviarChamadaNome()">CHAMAR NA TV</button>
+            </div>
+
+            <div class="historico-local" id="sessaoHistorico" style="display:none;">
+                <h3>Histórico: <span id="nomeSalaHistorico" style="color:#d39e00"></span></h3>
+                <div id="listaHistorico"></div>
+            </div>
+
+            <button class="btn-reset" onclick="resetContadores()">Reiniciar Sistema (aeroranchoiv)</button>
+        </div>
+    </div>
+
+    <script>
+        // Senha definida conforme sua solicitação anterior
+        function verificarSenha() {
+            const senha = document.getElementById('senhaAcesso').value;
+            if(senha === "aeroranchoiv") {
+                document.getElementById('loginOverlay').style.display = "none";
+                document.getElementById('mainContent').style.display = "block";
+            } else {
+                alert("Senha incorreta!");
+            }
+        }
+
+        // Configurações do Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyB-LPsGPEGcjMRPcEReNDQdgFWE5iE7Bh0",
+            authDomain: "usf-aero-rancho-b6d85.firebaseapp.com",
+            projectId: "usf-aero-rancho-b6d85",
+            storageBucket: "usf-aero-rancho-b6d85.firebasestorage.app",
+            messagingSenderId: "921551996891",
+            appId: "1:921551996891:web:05422f4255f882fc8289fe",
+            databaseURL: "https://usf-aero-rancho-b6d85-default-rtdb.firebaseio.com"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        let historicosPorSala = {};
+        let ultimaSomaSenhas = 0;
+
+        const config = {
+            acolhimento: { salas: ["Mesa Acolhimento"], tipo: 'acolhimento' },
+            recepcao: { salas: ["Recepção 01", "Recepção 02", "Recepção 03"], tipo: 'botoes' },
+            medico: { salas: ["Consultório 01", "Consultório 03", "Consultório 04"], tipo: 'nome' },
+            enfermagem: { salas: ["Triagem", "Consultório 02", "Sala de Vacina", "Sala de Coleta", "Sala de Curativo"], tipo: 'nome' },
+            servico_social: { salas: ["Serviço Social"], tipo: 'nome' },
+            odonto: { salas: ["Odontologia"], tipo: 'nome' },
+            gerencia: { salas: ["Gerência"], tipo: 'nome' }
+        };
+
+        function trocouCategoria() {
+            const cat = document.getElementById('categoria').value;
+            const selSala = document.getElementById('minhaSala');
+            if (!cat) return;
+            selSala.innerHTML = "";
+            config[cat].salas.forEach(s => { 
+                let o = document.createElement('option'); 
+                o.value = s; o.innerText = s; 
+                selSala.appendChild(o); 
+            });
+            configurarTela();
+        }
+
+        function configurarTela() {
+            const cat = document.getElementById('categoria').value;
+            const area = document.getElementById('areaChamada');
+            const salaAtual = document.getElementById('minhaSala').value;
+            if (!cat) { area.style.display = "none"; return; }
+
+            document.getElementById('interfaceAcolhimento').style.display = (cat === 'acolhimento') ? 'block' : 'none';
+            document.getElementById('interfaceRecepcao').style.display = (cat === 'recepcao') ? 'block' : 'none';
+            document.getElementById('interfaceNome').style.display = (config[cat].tipo === 'nome') ? 'block' : 'none';
+            document.getElementById('interfaceAvisos').style.display = (cat === 'gerencia') ? 'block' : 'none';
+            document.getElementById('interfaceColeta').style.display = (salaAtual === "Sala de Coleta") ? 'block' : 'none';
+            document.getElementById('selecaoSala').style.display = (cat === 'acolhimento') ? 'none' : 'block';
+            document.getElementById('sessaoHistorico').style.display = (cat !== 'acolhimento') ? 'block' : 'none';
+            
+            area.style.display = "block";
+            renderizarHistorico();
+        }
+
+        // Funções de lógica (preservadas do seu arquivo original)
+        function atualizarEntregues() {
+            const dados = {
+                normal: parseInt(document.getElementById('inputNormal').value) || 0,
+                pref: parseInt(document.getElementById('inputPref').value) || 0,
+                coleta: parseInt(document.getElementById('inputColeta').value) || 0,
+                odonto: parseInt(document.getElementById('inputOdonto').value) || 0
+            };
+            database.ref('acolhimento').set(dados).then(() => alert("Atualizado!")).catch(e => console.error(e));
+        }
+
+        function gerarSenha(key, prefixo) {
+            database.ref('contador/' + key).transaction(v => (v || 0) + 1, (err, comm, snap) => {
+                if (comm) enviarParaFirebase(`${prefixo} ${String(snap.val()).padStart(2, '0')}`);
+            });
+        }
+
+        function enviarChamadaNome() {
+            const nome = document.getElementById('nomePaciente').value.trim();
+            if(nome) { enviarParaFirebase(nome); document.getElementById('nomePaciente').value = ""; }
+        }
+
+        function enviarParaFirebase(texto) {
+            const sala = document.getElementById('minhaSala').value;
+            database.ref('chamada').set({ msg: texto, local: sala, hora: Date.now() });
+            if (!historicosPorSala[sala]) historicosPorSala[sala] = [];
+            historicosPorSala[sala] = historicosPorSala[sala].filter(i => i.texto !== texto);
+            historicosPorSala[sala].unshift({ texto: texto, hora: new Date().toLocaleTimeString() });
+            if(historicosPorSala[sala].length > 5) historicosPorSala[sala].pop();
+            renderizarHistorico();
+        }
+
+        function renderizarHistorico() {
+            const sala = document.getElementById('minhaSala').value;
+            const lista = document.getElementById('listaHistorico');
+            if(!lista) return;
+            lista.innerHTML = "";
+            if (historicosPorSala[sala]) {
+                historicosPorSala[sala].forEach(item => {
+                    lista.innerHTML += `<div class="item-historico"><div class="item-dados"><b>${item.texto}</b><span>${item.hora}</span></div><button class="btn-rechamada" onclick="enviarParaFirebase('${item.texto}')">RECHAMAR</button></div>`;
+                });
+            }
+        }
+
+        function resetContadores() {
+            if(prompt("Senha para reset:") === "aeroranchoiv") {
+                database.ref('contador').set({ NORMAL: 0, PREFERENCIAL: 0, COLETA: 0, ODONTO: 0 });
+                database.ref('acolhimento').set({ normal: 0, pref: 0, coleta: 0, odonto: 0 });
+                alert("Resetado!");
+            }
+        }
+    </script>
+</body>
+</html>
