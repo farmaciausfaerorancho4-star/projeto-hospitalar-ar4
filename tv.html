@@ -2,191 +2,191 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TV - USF Aero Rancho IV</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
     <style>
-        body { background: #002b5c; color: white; font-family: sans-serif; text-align: center; height: 100vh; margin: 0; display: flex; flex-direction: column; overflow: hidden; transition: background 0.3s; }
-        
-        /* Estilo da tela de bloqueio */
-        .login-tv { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #001a38; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; }
-        .login-box { background: white; padding: 30px; border-radius: 15px; color: #333; }
-        .login-box input { padding: 10px; font-size: 1.2rem; width: 200px; border-radius: 5px; border: 1px solid #ccc; }
-        .login-box button { padding: 10px 20px; font-size: 1.2rem; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        /* Ajuste Base para não desconfigurar */
+        * { box-sizing: border-box; }
+        html, body { 
+            height: 100%; 
+            margin: 0; 
+            padding: 0; 
+            overflow: hidden; 
+            background: #002b5c; 
+            font-family: sans-serif;
+        }
 
-        .topo { background: #001a38; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 5px solid #ffcc00; }
-        .unidade-nome { font-size: 1.8rem; font-weight: bold; text-align: left; }
-        .relogio { font-size: 2.5rem; font-family: 'Courier New', Courier, monospace; color: #ffcc00; }
-        .conteudo-principal { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; background: radial-gradient(circle, #003d82 0%, #002b5c 100%); position: relative; }
-        #painel-informativo { display: none; padding: 20px; animation: fadeIn 0.8s; }
-        .card-info { background: white; color: #333; border-radius: 25px; padding: 45px; max-width: 85%; margin: 0 auto; border-left: 20px solid #007bff; box-shadow: 0 15px 35px rgba(0,0,0,0.4); position: relative; }
-        .card-info h1 { margin: 0; color: #007bff; font-size: 2.2rem; text-transform: uppercase; }
-        #texto-info { font-size: 3.5rem; margin: 25px 0; font-weight: bold; line-height: 1.1; }
-        .barra-progresso { position: absolute; bottom: 0; left: 0; height: 10px; background: #007bff; width: 0%; transition: width 12s linear; }
-        .paciente { font-size: 8.5rem; font-weight: bold; color: #ffcc00; text-transform: uppercase; padding: 0 20px; line-height: 1.1; text-shadow: 4px 4px 10px rgba(0,0,0,0.5); }
-        .sala { font-size: 5.5rem; background: white; color: #002b5c; padding: 10px 80px; border-radius: 20px; display: inline-block; margin-top: 25px; font-weight: bold; border: 4px solid #ffcc00; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes flash { 0% { background-color: #002b5c; } 50% { background-color: #ffcc00; } 100% { background-color: #002b5c; } }
-        .piscar-alerta { animation: flash 0.8s ease-in-out 5; }
-        .historico-tv { background: rgba(0,0,0,0.3); padding: 15px; display: flex; justify-content: center; gap: 40px; border-top: 2px solid rgba(255,255,255,0.1); }
-        .hist-item-tv { border-left: 4px solid #ffcc00; padding-left: 15px; text-align: left; }
-        .hist-item-tv b { font-size: 1.6rem; color: #ffcc00; }
-        .marquee { background: #ffcc00; color: #002b5c; padding: 10px 0; font-size: 1.6rem; font-weight: bold; }
+        body { display: flex; flex-direction: column; color: white; text-align: center; }
+
+        /* Tela de Login */
+        .login-tv { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #001a38; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; }
+        .login-box { background: white; padding: 2rem; border-radius: 15px; color: #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .login-box input { padding: 10px; font-size: 1.2rem; margin-bottom: 10px; width: 100%; }
+        .login-box button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+
+        /* Topo */
+        .topo { background: #001a38; padding: 1vh 2vw; display: flex; justify-content: space-between; align-items: center; border-bottom: 5px solid #ffcc00; height: 12vh; }
+        .unidade-nome { font-size: 1.8rem; font-weight: bold; text-align: left; line-height: 1.2; }
+        .relogio { font-size: 2.5rem; font-family: monospace; color: #ffcc00; }
+
+        /* Área Central */
+        .conteudo-principal { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; background: radial-gradient(circle, #003d82 0%, #002b5c 100%); }
+        
+        /* Ajuste de Tamanho da Senha/Nome */
+        .paciente { 
+            font-size: 12vw; /* Ajusta conforme a largura da tela */
+            font-weight: bold; 
+            color: #ffcc00; 
+            text-transform: uppercase; 
+            line-height: 1; 
+            text-shadow: 4px 4px 15px rgba(0,0,0,0.6);
+            word-wrap: break-word;
+            max-width: 95vw;
+        }
+
+        .sala { 
+            font-size: 5vw; 
+            background: white; 
+            color: #002b5c; 
+            padding: 10px 50px; 
+            border-radius: 20px; 
+            display: inline-block; 
+            margin-top: 2vh; 
+            font-weight: bold; 
+            border: 4px solid #ffcc00; 
+        }
+
+        /* Informativos */
+        #painel-informativo { display: none; width: 90%; }
+        .card-info { background: white; color: #333; border-radius: 25px; padding: 3vw; border-left: 20px solid #007bff; box-shadow: 0 15px 35px rgba(0,0,0,0.4); text-align: left; }
+        .card-info h1 { margin: 0; color: #007bff; font-size: 2rem; }
+        #texto-info { font-size: 3rem; margin: 20px 0; font-weight: bold; color: #222; }
+
+        /* Rodapé Histórico */
+        .historico-tv { background: rgba(0,0,0,0.4); height: 12vh; display: flex; justify-content: center; align-items: center; gap: 50px; border-top: 2px solid rgba(255,255,255,0.1); }
+        .hist-item-tv { border-left: 5px solid #ffcc00; padding-left: 15px; text-align: left; }
+        .hist-item-tv b { font-size: 1.8rem; color: #ffcc00; }
+        
+        /* Marquee */
+        .marquee { background: #ffcc00; color: #002b5c; padding: 5px 0; font-size: 1.4rem; font-weight: bold; height: 5vh; display: flex; align-items: center; }
+
+        @keyframes flash { 0%, 100% { background-color: #002b5c; } 50% { background-color: #004d99; } }
+        .piscar-alerta { animation: flash 0.5s ease-in-out 6; }
     </style>
 </head>
-<body id="corpo-tv">
+<body>
 
     <div id="loginTV" class="login-tv">
         <div class="login-box">
-            <h3>Painel de Chamadas - USF</h3>
-            <input type="password" id="passTV" placeholder="Senha da Unidade">
-            <button onclick="acessarTV()">ENTRAR</button>
+            <h3 style="margin-top:0">Painel TV Aero Rancho IV</h3>
+            <input type="password" id="passTV" placeholder="Senha">
+            <button onclick="acessarTV()">ENTRAR NA TV</button>
         </div>
     </div>
 
-    <div id="conteudoTV" style="display:none">
+    <div id="conteudoTV" style="display:none; height: 100vh; flex-direction: column;">
         <div class="topo">
-            <div class="unidade-nome">USF AERO RANCHO IV<br><span style="font-size: 1.1rem; opacity: 0.8;">Dr. Nelson Tokuei Simabukuro</span></div>
+            <div class="unidade-nome">USF AERO RANCHO IV<br><span style="font-size: 1rem; opacity: 0.8; font-weight: normal;">Dr. Nelson Tokuei Simabukuro</span></div>
             <div id="relogio" class="relogio">00:00:00</div>
         </div>
-        <div class="conteudo-principal">
+
+        <div class="conteudo-principal" id="corpo-tv">
             <div id="area-chamada">
                 <div id="txtPaciente" class="paciente">--</div>
                 <div><div id="txtSala" class="sala">AGUARDE</div></div>
             </div>
+
             <div id="painel-informativo">
                 <div class="card-info" id="card-cor">
                     <h1 id="titulo-info">INFORMATIVO</h1>
-                    <div id="texto-info">Carregando...</div>
-                    <div id="barra-progresso" class="barra-progresso"></div>
+                    <div id="texto-info">Mantenha seus dados atualizados.</div>
                 </div>
             </div>
         </div>
-        <div id="painel-historico" class="historico-tv"></div>
-        <div class="marquee"><marquee scrollamount="10">Respeite o fluxo de atendimento. • USF Aero Rancho IV cuidando de você.</marquee></div>
+
+        <div id="painel-historico" class="historico-tv">
+            </div>
+
+        <div class="marquee">
+            <marquee scrollamount="8">USF Aero Rancho IV • Por favor, aguarde ser chamado pelo nome ou senha no painel. • Previna-se contra a Dengue!</marquee>
+        </div>
     </div>
 
     <script>
-        // Função de Login
+        const firebaseConfig = {
+            apiKey: "AIzaSyB-LPsGPEGcjMRPcEReNDQdgFWE5iE7Bh0",
+            authDomain: "usf-aero-rancho-b6d85.firebaseapp.com",
+            projectId: "usf-aero-rancho-b6d85",
+            storageBucket: "usf-aero-rancho-b6d85.firebasestorage.app",
+            messagingSenderId: "921551996891",
+            appId: "1:921551996891:web:05422f4255f882fc8289fe",
+            databaseURL: "https://usf-aero-rancho-b6d85-default-rtdb.firebaseio.com"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const somCampainha = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+        let histTv = [], primeiraCarga = true;
+
         function acessarTV() {
-            const p = document.getElementById('passTV').value;
-            if(p === "aeroranchoiv") {
+            if(document.getElementById('passTV').value === "aeroranchoiv") {
                 document.getElementById('loginTV').style.display = "none";
                 document.getElementById('conteudoTV').style.display = "flex";
-                iniciarSistema();
+                iniciarRelogio();
+                iniciarEscuta();
             } else { alert("Senha incorreta"); }
         }
 
-        function iniciarSistema() {
-            let timerOciosidade, intervaloRotatividade, indiceFrase = 0, avisosDaUnidade = [];
-            
-            const firebaseConfig = {
-                apiKey: "AIzaSyB-LPsGPEGcjMRPcEReNDQdgFWE5iE7Bh0",
-                authDomain: "usf-aero-rancho-b6d85.firebaseapp.com",
-                projectId: "usf-aero-rancho-b6d85",
-                storageBucket: "usf-aero-rancho-b6d85.firebasestorage.app",
-                messagingSenderId: "921551996891",
-                appId: "1:921551996891:web:05422f4255f882fc8289fe",
-                databaseURL: "https://usf-aero-rancho-b6d85-default-rtdb.firebaseio.com"
-            };
-            
-            if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
-            const database = firebase.database();
-            const somCampainha = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-            let histTv = [], primeiraCarga = true;
+        function iniciarRelogio() {
+            setInterval(() => { document.getElementById('relogio').innerText = new Date().toLocaleTimeString('pt-BR'); }, 1000);
+        }
 
-            // Escuta avisos da gerência
-            database.ref('avisos_unidade').on('value', (snap) => {
-                const data = snap.val();
-                avisosDaUnidade = [];
-                if(data) {
-                    for(let key in data) { 
-                        avisosDaUnidade.push({ msg: data[key].msg, cor: data[key].cor || "#007bff" }); 
-                    }
-                }
-            });
-
-            function trocarFrase() {
-                let informativos = [
-                    {t: "DENGUE", m: "Combata o mosquito! Elimine água parada em vasos e pneus.", c: "#e74c3c"},
-                    {t: "VACINAÇÃO", m: "Procure sempre atualizar sua caderneta de vacinação.", c: "#2ecc71"},
-                    {t: "AVISO IMPORTANTE", m: "Obrigatório apresentar CPF e Cartão do SUS no atendimento.", c: "#f39c12"}
-                ];
-
-                if(avisosDaUnidade.length > 0) {
-                    avisosDaUnidade.forEach(item => { 
-                        informativos.push({t: "AVISO DA UNIDADE", m: item.msg, c: item.cor}); 
-                    });
-                }
-
-                const item = informativos[indiceFrase % informativos.length];
-                const barra = document.getElementById('barra-progresso');
-                if(!barra) return;
-                
-                barra.style.transition = 'none'; barra.style.width = '0%';
-                
-                setTimeout(() => {
-                    document.getElementById('titulo-info').innerText = item.t;
-                    document.getElementById('titulo-info').style.color = item.c;
-                    document.getElementById('texto-info').innerText = item.m;
-                    document.getElementById('card-cor').style.borderLeftColor = item.c;
-                    barra.style.backgroundColor = item.c;
-                    barra.style.transition = 'width 12s linear'; barra.style.width = '100%';
-                    indiceFrase++;
-                }, 50);
-            }
-
-            // Escuta chamadas
+        function iniciarEscuta() {
             database.ref('chamada').on('value', (snapshot) => {
                 if (primeiraCarga) { primeiraCarga = false; return; }
                 const data = snapshot.val();
                 if(data) {
-                    pararInformativo();
-                    document.getElementById('area-chamada').style.display = 'block';
-                    document.getElementById('painel-informativo').style.display = 'none';
-                    
-                    const pAntigo = document.getElementById('txtPaciente').innerText, sAntiga = document.getElementById('txtSala').innerText;
-                    if(pAntigo !== "--" && pAntigo !== "" && pAntigo !== data.msg) {
-                        histTv.unshift({msg: pAntigo, local: sAntiga});
-                        if(histTv.length > 3) histTv.pop();
-                        desenharHistoricoTV();
-                    }
-                    
-                    document.getElementById('txtPaciente').innerText = data.msg;
-                    document.getElementById('txtSala').innerText = data.local;
-                    document.body.classList.remove('piscar-alerta'); void document.body.offsetWidth; document.body.classList.add('piscar-alerta');
-                    
-                    somCampainha.play().catch(e => console.log("Interação necessária para som"));
-                    
-                    setTimeout(() => {
-                        let msgTexto = data.msg.toUpperCase();
-                        let fraseFinal = msgTexto.includes("SENHA") ? `Atenção: ${data.msg}. Comparecer ao ${data.local}` : `Atenção: Paciente ${data.msg}. Dirija-se ao ${data.local}`;
-                        const fala = new SpeechSynthesisUtterance(fraseFinal);
-                        fala.lang = 'pt-BR'; window.speechSynthesis.speak(fala);
-                    }, 1500);
-                    
-                    resetarTimerOciosidade();
+                    exibirChamada(data);
                 }
             });
+        }
 
-            function resetarTimerOciosidade() {
-                clearTimeout(timerOciosidade);
-                timerOciosidade = setTimeout(() => {
-                    document.getElementById('area-chamada').style.display = 'none';
-                    document.getElementById('painel-informativo').style.display = 'block';
-                    trocarFrase(); intervaloRotatividade = setInterval(trocarFrase, 12000);
-                }, 45000);
+        function exibirChamada(data) {
+            const pAntigo = document.getElementById('txtPaciente').innerText;
+            const sAntigo = document.getElementById('txtSala').innerText;
+
+            if(pAntigo !== "--" && pAntigo !== data.msg) {
+                histTv.unshift({msg: pAntigo, local: sAntigo});
+                if(histTv.length > 3) histTv.pop();
+                atualizarHistorico();
             }
 
-            function pararInformativo() { clearInterval(intervaloRotatividade); }
+            document.getElementById('txtPaciente').innerText = data.msg;
+            document.getElementById('txtSala').innerText = data.local;
+            
+            // Efeito visual e sonoro
+            document.getElementById('corpo-tv').classList.remove('piscar-alerta');
+            void document.getElementById('corpo-tv').offsetWidth; 
+            document.getElementById('corpo-tv').classList.add('piscar-alerta');
+            
+            somCampainha.play().catch(() => {});
 
-            function desenharHistoricoTV() {
-                const painel = document.getElementById('painel-historico'); painel.innerHTML = "";
-                histTv.forEach(item => { painel.innerHTML += `<div class="hist-item-tv"><b>${item.msg}</b><br><span style="font-size:1.1rem">${item.local}</span></div>`; });
-            }
+            // Voz
+            setTimeout(() => {
+                let msg = `Atenção. ${data.msg}. Comparecer ao ${data.local}`;
+                const fala = new SpeechSynthesisUtterance(msg);
+                fala.lang = 'pt-BR';
+                window.speechSynthesis.speak(fala);
+            }, 1200);
+        }
 
-            setInterval(() => { document.getElementById('relogio').innerText = new Date().toLocaleTimeString('pt-BR'); }, 1000);
-            resetarTimerOciosidade();
+        function atualizarHistorico() {
+            const painel = document.getElementById('painel-historico');
+            painel.innerHTML = "";
+            histTv.forEach(item => {
+                painel.innerHTML += `<div class="hist-item-tv"><b>${item.msg}</b><br><span>${item.local}</span></div>`;
+            });
         }
     </script>
 </body>
